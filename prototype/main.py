@@ -1,6 +1,7 @@
 import cv2
 
 from core.pose_detector import PoseDetector
+from core.pose_analyzer import PoseAnalyzer
 from mediapipe.tasks.python import vision
 
 POSE_CONNECTIONS = [
@@ -34,6 +35,7 @@ POSE_CONNECTIONS = [
 
 def main():
     detector = PoseDetector()
+    analyzer = PoseAnalyzer()
     
 
     camera = cv2.VideoCapture(0, cv2.CAP_MSMF)
@@ -52,7 +54,23 @@ def main():
             break
 
         result = detector.detect(frame)
-        print("Pose detected: " , bool(result.pose_landmarks))
+
+        if result.pose_landmarks:
+            angles = analyzer.get_joint_angles(result.pose_landmarks[0])
+
+            print("Angles:", angles)
+
+            if angles["left_elbow"] is not None:
+                cv2.putText(
+                    frame,
+                    f"Left Elbow: {angles['left_elbow']:.1f}",
+                    (30,50),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1,
+                    (0,255,0),
+                    2
+                )
+        cv2.imshow("KhelAI - Camera Test", frame)
 
         if result.pose_landmarks:
             height, width, _ = frame.shape

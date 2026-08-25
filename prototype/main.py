@@ -2,7 +2,7 @@ import cv2
 
 from core.pose_detector import PoseDetector
 from core.pose_analyzer import PoseAnalyzer
-from mediapipe.tasks.python import vision
+from core.exercises.bicep_curl import BicepCurlAnanlyzer
 
 POSE_CONNECTIONS = [
     (0, 1), (1, 2), (2, 3), (3, 7),
@@ -36,6 +36,7 @@ POSE_CONNECTIONS = [
 def main():
     detector = PoseDetector()
     analyzer = PoseAnalyzer()
+    curl_analyzer = BicepCurlAnanlyzer()
     
 
     camera = cv2.VideoCapture(0, cv2.CAP_MSMF)
@@ -55,22 +56,84 @@ def main():
 
         result = detector.detect(frame)
 
+        left_curl_state = "UNKNOWN"
+        right_curl_state = "UNKNOWN"
+
         if result.pose_landmarks:
             angles = analyzer.get_joint_angles(result.pose_landmarks[0])
 
             print("Angles:", angles)
 
-            if angles["left_elbow"] is not None:
-                cv2.putText(
-                    frame,
-                    f"Left Elbow: {angles['left_elbow']:.1f}",
-                    (30,50),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1,
-                    (0,255,0),
-                    2
-                )
-        cv2.imshow("KhelAI - Camera Test", frame)
+            left_curl_state, left_reps = curl_analyzer.update(angles["left_elbow"])
+            right_curl_state, right_reps = curl_analyzer.update(angles["right_elbow"])
+
+            print(
+                f"Left Curl: {left_curl_state} | "
+                f"Right Curl: {right_curl_state}"
+            )
+
+            angle_names = [
+                ("Left Elbow", angles["left_elbow"]),
+                ("Right Elbow", angles["right_elbow"]),
+                ("Left Knee", angles["left_knee"]),
+                ("Right Knee", angles["right_knee"])
+            ]
+
+            y_position = 50
+
+            for name, angle in angle_names:
+                if angle is not None:
+                    cv2.putText(
+                        frame,
+                        f"{name}: {angle:.1f}",
+                        (30,y_position),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.7,
+                        (0, 255, 0),
+                        2
+                    )
+
+                    y_position += 35
+
+            cv2.putText(
+                frame,
+                f"Left Curl: {left_curl_state}",
+                (30, 200),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (0, 255, 0),
+                 2
+            )
+            
+            cv2.putText(
+                frame,
+                f"Right Curl: {right_curl_state}",
+                (30, 235),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (0, 255, 0),
+                2
+            )
+
+            cv2.putText(
+                frame,
+                f"Left Reps: {left_reps}",
+                (30, 270),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (0, 255, 0),
+                2
+            )
+
+            cv2.putText(
+                frame,
+                f"Right Reps: {right_reps}",
+                (30, 305),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (0, 255, 0),
+                2
+            )        
 
         if result.pose_landmarks:
             height, width, _ = frame.shape
@@ -114,8 +177,10 @@ def main():
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
-
+    
     camera.release()
     cv2.destroyAllWindows()
+
+
 if __name__ == "__main__":
     main()

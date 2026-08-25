@@ -2,7 +2,6 @@ import cv2
 
 from core.pose_detector import PoseDetector
 from core.pose_analyzer import PoseAnalyzer
-from mediapipe.tasks.python import vision
 
 POSE_CONNECTIONS = [
     (0, 1), (1, 2), (2, 3), (3, 7),
@@ -60,17 +59,28 @@ def main():
 
             print("Angles:", angles)
 
-            if angles["left_elbow"] is not None:
-                cv2.putText(
-                    frame,
-                    f"Left Elbow: {angles['left_elbow']:.1f}",
-                    (30,50),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1,
-                    (0,255,0),
-                    2
-                )
-        cv2.imshow("KhelAI - Camera Test", frame)
+            angle_names = [
+                ("Left Elbow", angles["left_elbow"]),
+                ("Right Elbow", angles["right_elbow"]),
+                ("Left Knee", angles["left_knee"]),
+                ("Right Knee", angles["right_knee"])
+            ]
+
+            y_position = 50
+
+            for name, angle in angle_names:
+                if angle is not None:
+                    cv2.putText(
+                        frame,
+                        f"{name}: {angle:1f}",
+                        (30,y_position),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.7,
+                        (0, 255, 0),
+                        2
+                    )
+
+                    y_position += 35        
 
         if result.pose_landmarks:
             height, width, _ = frame.shape

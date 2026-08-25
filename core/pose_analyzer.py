@@ -63,7 +63,7 @@ class PoseAnalyzer:
         return float(angle)
 
     def get_point(self, landmark):
-        return (landmark.x, landmark.y)
+        return (landmark.x, landmark.y, landmark.z)
 
     def is_visible(self, landmark):
         visibility = getattr(landmark, "visibility", 1.0)
@@ -160,6 +160,7 @@ if __name__ == "__main__":
             {
                 "x": 0.0,
                 "y": 0.0,
+                "z": 0.0,
                 "visibility": 1.0
             }
         )()
@@ -174,6 +175,37 @@ if __name__ == "__main__":
 
     fake_landmarks[LEFT_WRIST].x = 1
     fake_landmarks[LEFT_WRIST].y = 1
+
+    # Right elbow test
+    fake_landmarks[RIGHT_SHOULDER].x = 0
+    fake_landmarks[RIGHT_SHOULDER].y = 0
+
+    fake_landmarks[RIGHT_ELBOW].x = 1
+    fake_landmarks[RIGHT_ELBOW].y = 0
+
+    fake_landmarks[RIGHT_WRIST].x = 1
+    fake_landmarks[RIGHT_WRIST].y = 1
+
+    # Left knee test
+    fake_landmarks[LEFT_HIP].x = 0
+    fake_landmarks[LEFT_HIP].y = 0
+
+    fake_landmarks[LEFT_KNEE].x = 1
+    fake_landmarks[LEFT_KNEE].y = 0
+
+    fake_landmarks[LEFT_ANKLE].x = 1
+    fake_landmarks[LEFT_ANKLE].y = 1
+
+
+    # Right knee test
+    fake_landmarks[RIGHT_HIP].x = 0
+    fake_landmarks[RIGHT_HIP].y = 0
+
+    fake_landmarks[RIGHT_KNEE].x = 1
+    fake_landmarks[RIGHT_KNEE].y = 0
+
+    fake_landmarks[RIGHT_ANKLE].x = 1
+    fake_landmarks[RIGHT_ANKLE].y = 1
 
     angles = analyzer.get_joint_angles(fake_landmarks)
 

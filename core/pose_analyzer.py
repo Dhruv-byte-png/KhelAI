@@ -63,7 +63,7 @@ class PoseAnalyzer:
         return float(angle)
 
     def get_point(self, landmark):
-        return (landmark.x, landmark.y, landmark.z)
+        return (landmark.x, landmark.y)
 
     def is_visible(self, landmark):
         visibility = getattr(landmark, "visibility", 1.0)
@@ -144,6 +144,13 @@ class PoseAnalyzer:
             angles[name] = self.calculate_smoothed_angle(
                 name,
                 raw_angle
+            )
+
+            print(
+                "LEFT:",
+                "shoulder =", self.get_point(pose_landmarks[LEFT_SHOULDER]),
+                "elbow =", self.get_point(pose_landmarks[LEFT_ELBOW]),
+                "wrist =", self.get_point(pose_landmarks[LEFT_WRIST])
             )
 
         return angles

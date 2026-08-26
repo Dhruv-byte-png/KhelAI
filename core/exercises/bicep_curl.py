@@ -2,27 +2,27 @@ from collections import deque
 class BicepCurlAnanlyzer:
 
     def __init__(self):
-        self.extended_threshold = 160
-        self.contracted_threshold = 90
+        self.extended_threshold = 130
+        self.contracted_threshold = 100
 
+        #smoothing
         self.angle_history = deque(maxlen=5)
 
-        self.previous_state = "UNKNOWN"
+        #Rep Counting
+        self.phase = "UNKNOWN"
         self.reps = 0
 
-    def smooth_angle(self, elbow_angle):
-        if elbow_angle is None:
+    def smooth_angle(self, angle):
+        if angle is None:
             return None
 
-        self.angle_history.append(elbow_angle)
+        self.angle_history.append(angle)
 
         return sum(self.angle_history)/ len(self.angle_history)
 
     def get_state(self, elbow_angle):
         if elbow_angle is None:
             return "UNKNOWN"
-
-        print("Elbow angle:", elbow_angle)
 
         if elbow_angle >= self.extended_threshold:
             return "EXTENDED"
@@ -32,37 +32,52 @@ class BicepCurlAnanlyzer:
 
         return "MOVING"
 
-    def update(self, elbow_angle):
-        current_state = self.get_state(elbow_angle)
+    def update_rep(self, elbow_angle):
 
         #count a rep when the arm goes: 
-        #EXTENDED -> CONTRACTED -> EXTENDED
+        #EXTENDED -> CONTRACTED -> EXTENDED -> +1 rep
 
-        if(
-            self.previous_state == "CONTRACTED"
-            and current_state == "EXTENDED"
-        ):
-            self.reps += 1
+        if elbow_angle is None:
+            return "UNKOWN" , self.reps
 
-        if current_state != "UNKNOWN":
-            self.previous_state = current_state
+        state = self.get_state(elbow_angle)
 
-        return current_state, self.reps
+        #Start the cycle only when the arm is extended
+        if self.phase == "UNKNOWN":
+            if state == "EXTENDED":
+                self.phase = "EXTENDED"
+
+        #Arm was extended and is now contracted
+        elif self.phase == "EXTENDED":
+            if state == "CONTRACTED":
+                self.phase = "CONTRACTED"
+
+        #Arm was contracted and returned to extended
+        elif self.phase == "CONTRACTED":
+            if state == "EXTENDED":
+                self.reps += 1
+                self.phase = "EXTENDED"
+
+        return state, self.reps
 
 if __name__ == "__main__":
 
     analyzer = BicepCurlAnanlyzer()
 
     test_angles = [
-        140,   #extended
-        120,   #moving
+        150,   #extended
+        140,   
+        110,   #moving
         90,    #contracted
-        100,   #moving
-        140    #extended -> 1 rep
+        80,
+        100,
+        120,   #moving
+        140,    #extended -> rep
+        150
     ]
 
     for angle in test_angles:
-        state, reps = analyzer.update(angle)
+        state, reps = analyzer.update_rep(angle)
         print(
             f"Angle: {angle} | "
             f"State: {state} | "

@@ -99,7 +99,9 @@ def main():
                 ("Left Elbow", angles["left_elbow"]),
                 ("Right Elbow", angles["right_elbow"]),
                 ("Left Knee", angles["left_knee"]),
-                ("Right Knee", angles["right_knee"])
+                ("Right Knee", angles["right_knee"]),
+                ("Left Elbow Dist", angles["left_elbow_distance"]),
+                ("Right Elbow Dist", angles["right_elbow_distance"])
             ]
 
             y_position = 50

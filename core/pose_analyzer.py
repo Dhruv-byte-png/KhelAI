@@ -65,6 +65,12 @@ class PoseAnalyzer:
     def get_point(self, landmark):
         return (landmark.x, landmark.y)
 
+    def calculate_distannce(self, a, b):
+        a = np.array(a)
+        b = np.array(b)
+
+        return float(np.linalg.norm(a-b))
+
     def is_visible(self, landmark):
         visibility = getattr(landmark, "visibility", 1.0)
 
@@ -119,6 +125,17 @@ class PoseAnalyzer:
             )
         }
 
+        # Calculate shoulder -> elbow distances
+        left_elbow_distance = self.calculate_distannce(
+            self.get_point(pose_landmarks[LEFT_SHOULDER]),
+            self.get_point(pose_landmarks[LEFT_ELBOW])
+        )
+
+        right_elbow_distance = self.calculate_distannce(
+            self.get_point(pose_landmarks[RIGHT_SHOULDER]),
+            self.get_point(pose_landmarks[RIGHT_ELBOW])
+        )
+
         angles = {}
 
         for name, (a_idx, b_idx, c_idx) in joints.items():
@@ -146,14 +163,14 @@ class PoseAnalyzer:
                 raw_angle
             )
 
-            print(
-                "LEFT:",
-                "shoulder =", self.get_point(pose_landmarks[LEFT_SHOULDER]),
-                "elbow =", self.get_point(pose_landmarks[LEFT_ELBOW]),
-                "wrist =", self.get_point(pose_landmarks[LEFT_WRIST])
-            )
-
-        return angles
+        return {
+            "left_elbow": angles["left_elbow"],
+            "right_elbow": angles["right_elbow"],
+            "left_knee": angles["left_knee"],
+            "right_knee": angles["right_knee"],
+            "left_elbow_distance": left_elbow_distance,
+            "right_elbow_distance": right_elbow_distance
+        }
 
 
 if __name__ == "__main__":

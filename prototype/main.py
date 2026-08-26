@@ -37,7 +37,8 @@ POSE_CONNECTIONS = [
 def main():
     detector = PoseDetector()
     analyzer = PoseAnalyzer()
-    curl_analyzer = BicepCurlAnanlyzer()
+    left_curl_analyzer = BicepCurlAnanlyzer()
+    right_curl_analyzer = BicepCurlAnanlyzer()
 
     camera = cv2.VideoCapture(0, cv2.CAP_MSMF)
 
@@ -60,6 +61,9 @@ def main():
         left_curl_state = "UNKNOWN"
         right_curl_state = "UNKNOWN"
 
+        left_reps = left_curl_analyzer.reps
+        right_reps = right_curl_analyzer.reps
+
         if result.pose_landmarks:
             angles = analyzer.get_joint_angles(
                 result.pose_landmarks[0]
@@ -68,20 +72,20 @@ def main():
             print("Angles:", angles)
 
             # Smooth the raw elbow angles
-            left_angle = curl_analyzer.smooth_angle(
+            left_angle = left_curl_analyzer.smooth_angle(
                 angles["left_elbow"]
             )
 
-            right_angle = curl_analyzer.smooth_angle(
+            right_angle = right_curl_analyzer.smooth_angle(
                 angles["right_elbow"]
             )
 
             # Determine curl state from smoothed angles
-            left_curl_state = curl_analyzer.get_state(
+            left_curl_state, left_reps = left_curl_analyzer.update_rep(
                 left_angle
             )
 
-            right_curl_state = curl_analyzer.get_state(
+            right_curl_state, right_reps = right_curl_analyzer.update_rep(
                 right_angle
             )
 
@@ -129,6 +133,27 @@ def main():
                 frame,
                 f"Right Curl: {right_curl_state}",
                 (30, 235),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (0, 255, 0),
+                2
+            )
+
+            #reps display
+            cv2.putText(
+                frame,
+                f"Left Reps: {left_reps}",
+                (30, 270),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (0, 255, 0),
+                2
+            )
+
+            cv2.putText(
+                frame,
+                f"Right Reps: {right_reps}",
+                (30, 305),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.7,
                 (0, 255, 0),

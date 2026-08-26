@@ -1,11 +1,22 @@
+from collections import deque
 class BicepCurlAnanlyzer:
 
     def __init__(self):
         self.extended_threshold = 160
         self.contracted_threshold = 90
 
+        self.angle_history = deque(maxlen=5)
+
         self.previous_state = "UNKNOWN"
         self.reps = 0
+
+    def smooth_angle(self, elbow_angle):
+        if elbow_angle is None:
+            return None
+
+        self.angle_history.append(elbow_angle)
+
+        return sum(self.angle_history)/ len(self.angle_history)
 
     def get_state(self, elbow_angle):
         if elbow_angle is None:
